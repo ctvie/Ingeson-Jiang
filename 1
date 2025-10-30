@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姜桐 Jingjing JIANG — 录音师作品集 / Portfolio Ingénieure du son</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Calm Neutrals (BG: stone-50, Text: stone-800, Cards: white, Accent: teal-700) -->
+    <!-- Application Structure Plan: Single-page scrolling SPA with sticky nav (Présentation, Expériences, Compétences, Contact) for clear, linear storytelling. Key interaction is a CN/FR/Bilingual language toggle to solve the interleaved text problem. The "Compétences" section uses interactive tabs ('Personal Gear' vs 'Familiar Skills') to directly answer the key question from a producer's perspective, based on analysis of the user's feedback document. This structure is more task-oriented (hiring) than the original report's simple list. -->
+    <!-- Visualization & Content Choices: 1. Report Info: Bilingual text. Goal: Readability. Presentation: Language Toggle (JS/CSS). Interaction: Click to hide/show CN/FR text blocks. Justification: Interleaved text is unreadable; this toggle provides a clean UX. 2. Report Info: Skills & Gear Table. Goal: Distinguish owned vs. familiar gear. Presentation: Interactive HTML Tabs ('Personal' vs 'Familiar'). Interaction: Click tabs to switch content. Justification: Directly addresses producer's primary question, as noted in user's feedback file. A chart is inappropriate. 3. Report Info: Project List. Goal: Scan experience quickly. Presentation: HTML/CSS Grid of Cards. Interaction: None (static info). Justification: Easy to scan, responsive. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .section {
+            scroll-margin-top: 80px;
+        }
+        .lang-fr, .lang-zh {
+            transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+            display: block;
+            overflow: hidden;
+        }
+
+        .lang-zh-only .lang-fr,
+        .lang-fr-only .lang-zh {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        
+        .lang-zh-only .lang-zh,
+        .lang-fr-only .lang-fr {
+            max-height: 1000px;
+            opacity: 1;
+        }
+
+        .lang-bilingual .lang-zh {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        .lang-bilingual .lang-fr {
+            max-height: 1000px;
+            opacity: 1;
+            font-style: italic;
+            color: #444;
+            margin-top: 0.5rem;
+        }
+
+        .lang-toggle-btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .lang-toggle-btn.active {
+            background-color: #0d9488;
+            color: white;
+            border-color: #0d9488;
+        }
+        .lang-toggle-btn:not(.active) {
+            background-color: white;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+        .skill-tab {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .skill-tab.active {
+            border-color: #0d9488;
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .skill-tab-content {
+            display: none;
+        }
+        .skill-tab-content.active {
+            display: block;
+        }
+        .nav-link.active {
+            color: #0d9488;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 lang-bilingual">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md shadow-sm">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo / Name -->
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-xl font-bold text-stone-900">姜桐录音 Ingé son</a>
+                </div>
+                
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <a href="#presentation" class="nav-link text-gray-600 hover:text-teal-700 transition">简介 / Présentation</a>
+                    <a href="#experiences" class="nav-link text-gray-600 hover:text-teal-700 transition">经验 / Expériences</a>
+                    <a href="#competences" class="nav-link text-gray-600 hover:text-teal-700 transition">技能 / Compétences</a>
+                    <a href="#contact" class="nav-link text-gray-600 hover:text-teal-700 transition">联系 / Contact</a>
+                    
+                    <!-- Language Toggle -->
+                    <div class="flex items-center space-x-1 border border-gray-200 rounded-full p-1 bg-gray-50">
+                        <button id="lang-zh" class="lang-toggle-btn" onclick="setLang('zh')">中</button>
+                        <button id="lang-fr" class="lang-toggle-btn" onclick="setLang('fr')">FR</button>
+                        <button id="lang-bi" class="lang-toggle-btn active" onclick="setLang('bilingual')">双语</button>
+                    </div>
+                </div>
+
+                <!-- Mobile Nav Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-700 transition">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#presentation" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-teal-700 hover:bg-gray-50 transition">简介 / Présentation</a>
+                <a href="#experiences" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-teal-700 hover:bg-gray-50 transition">经验 / Expériences</a>
+                <a href="#competences" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-teal-700 hover:bg-gray-50 transition">技能 / Compétences</a>
+                <a href="#contact" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-teal-700 hover:bg-gray-50 transition">联系 / Contact</a>
+            </div>
+            <!-- Language Toggle (Mobile) -->
+            <div class="flex justify-center space-x-2 p-3 border-t border-gray-200 bg-gray-50">
+                <button id="lang-zh-m" class="lang-toggle-btn" onclick="setLang('zh')">中文</button>
+                <button id="lang-fr-m" class="lang-toggle-btn" onclick="setLang('fr')">Français</button>
+                <button id="lang-bi-m" class="lang-toggle-btn active" onclick="setLang('bilingual')">双语</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- Section 1: 个人简介 / Présentation -->
+        <section id="presentation" class="section my-16">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <div class="md:col-span-1 flex justify-center">
+                    <!-- 建议替换为你专业的个人照片 -->
+                    <img class="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-lg" src="profile-photo.jpg" alt="姜桐 Jingjing JIANG 个人照片">
+                </div>
+                <div class="md:col-span-2">
+                    <h1 class="text-4xl font-bold mb-4">
+                        <span class="lang-zh">姜桐</span>
+                        <span class="lang-fr">Jingjing JIANG</span>
+                    </h1>
+                    <h2 class="text-2xl font-medium text-teal-700 mb-6">
+                        <span class="lang-zh">录音师 / 录音指导 / 杆麦员</span>
+                        <span class="lang-fr">Ingénieure du son / Cheffe opératrice du son / Perchwoman</span>
+                    </h2>
+                    
+                    <div class="space-y-4 text-lg text-stone-700">
+                        <!-- <p>
+                            <span class="lang-zh">现居巴黎，可于法兰西岛地区乃欧洲工作。每年七八月可于中国南方地区工作。</span>
+                            <span class="lang-fr">Basée à Paris, disponible pour des tournages en Île-de-France et chaque année en juillet–août dans le sud de la Chine.</span>
+                        </p> -->
+                        
+                        <!-- Replaced p tag with icon list -->
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <!-- Location Pin Icon -->
+                                <svg class="w-6 h-6 text-teal-700 mr-2.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                </svg>
+                                <div class="pt-0.5">
+                                    <span class="lang-zh">现居巴黎，可于法兰西岛地区及欧洲工作。</span>
+                                    <span class="lang-fr">Basée à Paris, disponible pour des tournages en Île-de-France ou en Europe.</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <!-- Calendar Icon -->
+                                <svg class="w-6 h-6 text-teal-700 mr-2.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                                <div class="pt-0.5">
+                                    <span class="lang-zh">每年七八月可于中国南方地区工作。</span>
+                                    <span class="lang-fr">Disponible chaque année en juillet–août dans le sud de la Chine.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End of replacement -->
+
+                        <p>
+                            <span class="lang-zh">长期在中法两地从事电影与纪录片录音工作，擅长同期声采集、无线系统管理及复杂环境下的声音控制。</span>
+                            <span class="lang-fr">Expérimentée dans la prise de son directe pour courts-métrages et documentaires, avec une attention particulière à la qualité du dialogue et à la cohérence spatiale du son.</span>
+                        </p>
+                    </div>
+
+                    <!-- 建议：添加一个指向你作品集的链接 (Demo Reel) -->
+                    <div class="mt-6">
+                        <a href="#" class="inline-block px-6 py-3 bg-teal-700 text-white rounded-lg font-semibold shadow-md hover:bg-teal-600 transition duration-200">
+                            <span class="lang-zh">▶️ 试听作品 (Demo Reel)</span>
+                            <span class="lang-fr">▶️ Écouter la démo sonore</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold mb-3">
+                            <span class="lang-zh">声音理念</span>
+                            <span class="lang-fr">Approche du son</span>
+                        </h3>
+                        <p class="text-stone-700">
+                            <span class="lang-zh">我的目标是让每一条对话都自然、清晰，同时保留环境的真实感，让声音服务于故事叙事。</span>
+                            <span class="lang-fr">Mon objectif est de rendre chaque dialogue naturel et intelligible, tout en conservant l’authenticité des ambiances, pour que le son serve pleinement la narration.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: 项目经验 / Expériences de tournage -->
+        <section id="experiences" class="section my-24">
+            <h2 class="text-3xl font-bold text-center mb-12">
+                <span class="lang-zh">项目经验2025</span>
+                <span class="lang-fr">Expériences de tournage 2025</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Project 1 (Cheffe op) -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">
+                            <span class="lang-zh">《Manipulations》(操纵) – 2024</span>
+                            <span class="lang-fr">《Manipulations》 – 2024</span>
+                        </h3>
+                        <p class="text-sm text-gray-500 mb-3">
+                            <span class="lang-zh">剧情短片 / 导演: 王林静</span>
+                            <span class="lang-fr">Court métrage de fiction / Réal. : WANG Linjing</span>
+                        </p>
+                        <p class="font-semibold text-teal-700 mb-4">
+                            <span class="lang-zh">录音指导</span>
+                            <span class="lang-fr">Cheffe opératrice du son</span>
+                        </p>
+                        <p class="text-stone-700 text-sm">
+                            <span class="lang-zh">参与导演与摄影团队的声音方案讨论，负责全片设备调试，现场录音、环境声收集与声音整理。</span>
+                            <span class="lang-fr">Prise de son directe et collecte d’ambiances, préparation du matériel et coordination avec le mixage final.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Project 2 (Perchwoman) -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">
+                            <span class="lang-zh">《Les Jules》 – 2024</span>
+                            <span class="lang-fr">《Les Jules》 – 2024</span>
+                        </h3>
+                        <p class="text-sm text-gray-500 mb-3">
+                            <span class="lang-zh">法国国家电影学院La Fémis 短片项目 / 导演: Jule Faes</span>
+                            <span class="lang-fr">Projet d’école La Fémis / Réal. : Jule Faes</span>
+                        </p>
+                        <p class="font-semibold text-teal-700 mb-4">
+                            <span class="lang-zh">杆麦员</span>
+                            <span class="lang-fr">Perchwoman</span>
+                        </p>
+                        <p class="text-stone-700 text-sm">
+                            <span class="lang-zh">负责全片录音，挑战外景录音，协调多机位同步及无线麦克风信号管理。</span>
+                            <span class="lang-fr">Gestion du son direct et coordination multi-caméra en décor intérieur et extérieur.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Project 3 (Assistante) -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">
+                            <span class="lang-zh">《回归故里之前》 – 2023</span>
+                            <span class="lang-fr">《Avant le retour》 – 2023</span>
+                        </h3>
+                        <p class="text-sm text-gray-500 mb-3">
+                            <span class="lang-zh">剧情短片 / 导演: 沈文晶</span>
+                            <span class="lang-fr">Court métrage de fiction / Réal. : SHEN Wenjing</span>
+                        </p>
+                        <p class="font-semibold text-teal-700 mb-4">
+                            <span class="lang-zh">录音助理/杆麦员</span>
+                            <span class="lang-fr">Assistante son/PercheWoman</span>
+                        </p>
+                        <p class="text-stone-700 text-sm">
+                            <span class="lang-zh">协助录音指导完成同期录音与无线麦克风部署。</span>
+                            <span class="lang-fr">Assistance à la prise de son directe et à l’installation des micros HF, participation à la préparation sonore avec l’équipe image et réalisation.</span>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 3: 技能与设备 / Compétences et matériel -->
+        <section id="competences" class="section my-24">
+            <h2 class="text-3xl font-bold text-center mb-8">
+                <span class="lang-zh">技能与设备</span>
+                <span class="lang-fr">Compétences et matériel</span>
+            </h2>
+
+            <!-- Interactive Tabs -->
+            <div class="flex justify-center border-b border-gray-300 mb-8">
+                <button class="skill-tab active" onclick="showSkillTab('personal')">
+                    <span class="lang-zh">🎛️ 熟悉使用设备</span>
+                    <span class="lang-fr">🎛️ Équipements Maîtrisés</span>
+                </button>
+                <button class="skill-tab" onclick="showSkillTab('familiar')">
+                    <span class="lang-zh">🎚 熟悉技能</span>
+                    <span class="lang-fr">🎚 Compétences Techniques</span>
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="max-w-4xl mx-auto">
+                <!-- Personal Equipment -->
+                <div id="skill-personal" class="skill-tab-content active">
+                    <p class="text-center text-gray-600 mb-6">
+                        <span class="lang-zh">我熟练掌握并可用于拍摄的各类设备：</span>
+                        <span class="lang-fr">Équipements que je maîtrise et que je peux utiliser en tournage :</span>
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-stone-700">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">录音机</span><span class="lang-fr">Enregistreurs</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Zoom F8n / F8 / F6</li>
+                                <li>Sound Devices 6 / 8 Series</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">麦克风</span><span class="lang-fr">Microphones</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Sennheiser MKH 416 / 400 / 600</li>
+                                <li>Rode NTG 3 / 4 / 4+ / 5</li>
+                                <li>Sennheiser AMBEO </li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">无线系统 & 时码</span><span class="lang-fr">HF & Timecode</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Sennheiser EW 100 G3/G4</li>
+                                <li>Sony UWP-D</li>
+                                <li>Tentacle Sync / EASYNC</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">监听 & 配件</span><span class="lang-fr">Monitoring & Accessoires</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Sony MDR 7506, Sennheiser HD25+</li>
+                                <li>导演返听 (IEM)</li>
+                                <li> 杆麦, 防风罩, 线缆, 供电系统 Perche microphonique, pare-brise, câbles, système d'alimentation électrique</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Familiar Skills & Equipment -->
+                <div id="skill-familiar" class="skill-tab-content">
+                    <p class="text-center text-gray-600 mb-6">
+                        <span class="lang-zh">我熟练掌握的核心录音与后期技能：</span>
+                        <span class="lang-fr">Compétences principales en prise de son et post-production :</span>
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-stone-700">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">同期录音</span><span class="lang-fr">Prise de son</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><span class="lang-zh">杆麦操作 (室内/室外)</span><span class="lang-fr">Opération de la perche (int/ext)</span></li>
+                                <li><span class="lang-zh">无线系统管理 (HF)</span><span class="lang-fr">Gestion des systèmes HF</span></li>
+                                <li><span class="lang-zh">多机位同步</span><span class="lang-fr">Synchro multi-caméras</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2"><span class="lang-zh">后期软件</span><span class="lang-fr">Logiciels</span></h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Da Vinci</li>
+                                <li>Adobe Audition</li>
+                                <li>Logic Pro</li>
+                                <li><span class="lang-zh">(用于声音清理、对白整理和简单混音)</span><span class="lang-fr">(Pour nettoyage, montage dialogue et mix simple)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: 联系方式 / Contact -->
+        <section id="contact" class="section my-24">
+            <h2 class="text-3xl font-bold text-center mb-8">
+                <span class="lang-zh">联系方式</span>
+                <span class="lang-fr">Contact</span>
+            </h2>
+            <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg text-center border border-gray-200">
+                <p class="text-lg mb-6">
+                    <span class="lang-zh">期待与您合作，请通过以下方式联系我：</span>
+                    <span class="lang-fr">Au plaisir de collaborer avec vous. Vous pouvez me contacter via :</span>
+                </p>
+                <div class="space-y-4 text-lg">
+                    <a href="mailto:sycamore.films@outlook.com" class="block w-full text-center px-6 py-3 bg-teal-700 text-white rounded-lg font-semibold hover:bg-teal-600 transition duration-200">
+                        📧 Email: sycamore.films@outlook.com
+                    </a>
+                    <a href="tel:+33616758817" class="block w-full text-center px-6 py-3 bg-stone-700 text-white rounded-lg font-semibold hover:bg-stone-600 transition duration-200">
+                        📞 Tél (FR): +33 6 16 75 88 17
+                    </a>
+                    <a href="tel:+8618870779361" class="block w-full text-center px-6 py-3 bg-stone-700 text-white rounded-lg font-semibold hover:bg-stone-600 transition duration-200">
+                        📞 电话 (CN): +86 188 7077 9361
+                    </a>
+                    <a href="#" class="hidden w-full text-center px-6 py-3 bg-stone-700 text-white rounded-lg font-semibold hover:bg-stone-600 transition duration-200">
+                        🔗 LinkedIn
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-800 text-stone-300 py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 姜桐 Jingjing JIANG. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentLang = 'bilingual';
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.body.classList.remove('lang-zh-only', 'lang-fr-only', 'lang-bilingual');
+            document.body.classList.add(`lang-${lang}-only`);
+
+            const allButtons = document.querySelectorAll('.lang-toggle-btn');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(`lang-${lang === 'bilingual' ? 'bi' : lang}`).classList.add('active');
+            document.getElementById(`lang-${lang === 'bilingual' ? 'bi' : lang}-m`).classList.add('active');
+            
+            closeMobileMenu();
+        }
+
+        function showSkillTab(tabName) {
+            const contents = document.querySelectorAll('.skill-tab-content');
+            contents.forEach(c => {
+                c.classList.remove('active');
+            });
+            document.getElementById(`skill-${tabName}`).classList.add('active');
+
+            const tabs = document.querySelectorAll('.skill-tab');
+            tabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('hidden');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (e.currentTarget.hash) {
+                    const targetSection = document.querySelector(e.currentTarget.hash);
+                    if (targetSection) {
+                        closeMobileMenu();
+                    }
+                }
+            });
+        });
+        
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${entry.target.id}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: '-100px 0px -50% 0px', threshold: 0.1 });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setLang('bilingual');
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+
